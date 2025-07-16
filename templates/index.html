@@ -5,6 +5,7 @@
   <title>سامانه دریافت کارنامه</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Vazirmatn&display=swap');
+
     body {
       font-family: 'Vazirmatn', sans-serif;
       background: linear-gradient(to right, #f1f3f6, #e4e8ef);
@@ -15,6 +16,7 @@
       height: 100vh;
       margin: 0;
     }
+
     .container {
       background-color: white;
       padding: 2rem;
@@ -24,19 +26,23 @@
       max-width: 400px;
       width: 90%;
     }
+
     h1 {
       color: #1e3a8a;
       margin-bottom: 0.5rem;
     }
+
     h2 {
       color: #374151;
       margin-bottom: 1.5rem;
       font-size: 1.1rem;
     }
+
     form {
       display: flex;
       flex-direction: column;
     }
+
     input {
       padding: 0.6rem;
       margin: 0.5rem 0;
@@ -45,6 +51,7 @@
       font-size: 1rem;
       text-align: center;
     }
+
     button {
       background-color: #2563eb;
       color: white;
@@ -54,9 +61,11 @@
       font-size: 1rem;
       cursor: pointer;
     }
+
     button:hover {
       background-color: #1d4ed8;
     }
+
     .error {
       margin-top: 1rem;
       color: red;
@@ -76,5 +85,20 @@
       <div class="error">{{ error }}</div>
     {% endif %}
   </div>
+
+  <script>
+    document.querySelector("form").addEventListener("submit", function () {
+      // پاک کردن ورودی فرم پس از ارسال
+      document.querySelector("input[name='access_code']").value = "";
+
+      // حذف پیام خطا (در صورت وجود)
+      const errorBox = document.querySelector(".error");
+      if (errorBox) {
+        setTimeout(() => {
+          errorBox.style.display = "none";
+        }, 100);
+      }
+    });
+  </script>
 </body>
-</html>
+</html
