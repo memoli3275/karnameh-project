@@ -27,8 +27,8 @@ def find_page_by_code(pdf_path, code):
             return page_num + 1
     return None
 
-# حذف فایل موقت بعد از ۱۵ ثانیه
-def delete_file_later(path, delay=15):
+# حذف فایل موقت بعد از 120 ثانیه
+def delete_file_later(path, delay=120):
     def task():
         import time
         time.sleep(delay)
