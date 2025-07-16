@@ -37,31 +37,33 @@ def delete_file_later(path, delay=15):
             os.remove(path)
     threading.Thread(target=task).start()
 
-# 🎯 نقطه ورود اصلی سایت
+# 🎯 نقطه ورود اصلی سایت با اصلاح نمایش خطا
 @app.route("/", methods=["GET", "POST"])
 def index():
-    error = None
     if request.method == "POST":
         code = request.form["access_code"].strip()
         source_pdf = os.path.join("files", "documents.pdf")
 
         # ⛔ بررسی ثبت‌نام‌نشده‌ها
         if code in unauthorized_codes:
-            error = "دانش آموزعزیز به دلیل عدم ثبت نام قادر به دیدن کارنامه خود نمی باشید  ."
+            error = "دانش آموز عزیز، به دلیل عدم ثبت‌نام قادر به دریافت کارنامه نمی‌باشید."
             return render_template("index.html", error=error)
 
+        # 🔍 جستجوی صفحه دارای کد ملی
         page_number = find_page_by_code(source_pdf, code)
 
         if page_number:
             output_pdf = os.path.join("files", f"{code}.pdf")
             extract_single_page(source_pdf, output_pdf, page_number)
-            delete_file_later(output_pdf)  # پاک‌سازی بعد از ۱۵ ثانیه
+            delete_file_later(output_pdf)
             return send_from_directory("files", f"{code}.pdf", as_attachment=True)
         else:
             error = "کد ملی شما در فایل یافت نشد 😔"
-    return render_template("index.html", error=error)
+            return render_template("index.html", error=error)
 
-# 🔧 اجرای برنامه
+    # بارگذاری فرم بدون هیچ خطا در حالت GET
+    return render_template("index.html")
+
+# 🔧 اجرای برنامه در محیط تست یا تولید
 if __name__ == "__main__":
-    #app.run(debug=True)
-    app.run(host="0.0.0.0",port=10000)
+    app.run(host="0.0.0.0", port=10000)
