@@ -1,16 +1,16 @@
 from flask import Flask, render_template, request, send_from_directory
-import fitz  # PyMuPDF برای کار با PDF
+import fitz  # PyMuPDF
 import os
 import json
 import threading
 
 app = Flask(__name__)
 
-# ⛔ بارگذاری لیست کدهای ثبت‌نام‌نشده از فایل JSON
+# ⛔ بارگذاری لیست دانش‌آموزان ثبت‌نام‌نشده
 with open("unauthorized.json", "r", encoding="utf-8") as f:
     unauthorized_codes = json.load(f)
 
-# 📄 استخراج فقط یک صفحه از فایل PDF
+# 📄 استخراج فقط یک صفحه از PDF
 def extract_single_page(source_path, target_path, page_number):
     doc = fitz.open(source_path)
     new_doc = fitz.open()
@@ -19,7 +19,7 @@ def extract_single_page(source_path, target_path, page_number):
     new_doc.close()
     doc.close()
 
-# 🔍 جستجوی شماره صفحه‌ای که شامل کد ملی باشد
+# 🔍 پیدا کردن شماره صفحه‌ای که شامل کد ملی باشد
 def find_page_by_code(pdf_path, code):
     doc = fitz.open(pdf_path)
     for page_num in range(len(doc)):
@@ -28,7 +28,7 @@ def find_page_by_code(pdf_path, code):
             return page_num + 1
     return None
 
-# 🧹 حذف خودکار فایل PDF بعد از چند ثانیه
+# 🧹 حذف فایل PDF پس از ارسال
 def delete_file_later(path, delay=15):
     def task():
         import time
@@ -37,19 +37,17 @@ def delete_file_later(path, delay=15):
             os.remove(path)
     threading.Thread(target=task).start()
 
-# 🎯 مسیر اصلی سایت - کنترل فرم و ارسال فایل
+# 🎯 مسیر اصلی سایت
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        code = request.form["access_code"].strip()
+        code = request.form["access_code"].strip().replace("‌", "").replace(" ", "")
         source_pdf = os.path.join("files", "documents.pdf")
 
-        # ⛔ اگر دانش‌آموز ثبت‌نام نشده باشد
         if code in unauthorized_codes:
-            error = "دانش آموز عزیز، به دلیل عدم ثبت‌نام قادر به دریافت کارنامه نمی‌باشید."
-            return render_template("index.html", error=error, code="")
+            error = "دانش‌آموز عزیز، به دلیل عدم ثبت‌نام قادر به دریافت کارنامه نمی‌باشید."
+            return render_template("index.html", error=error, code=code)
 
-        # 🔎 بررسی وجود کد در PDF
         page_number = find_page_by_code(source_pdf, code)
 
         if page_number:
@@ -59,9 +57,8 @@ def index():
             return send_from_directory("files", f"{code}.pdf", as_attachment=True)
         else:
             error = "کد ملی شما در فایل یافت نشد 😔"
-            return render_template("index.html", error=error, code="")
+            return render_template("index.html", error=error, code=code)
 
-    # بارگذاری اولیه صفحه بدون خطا و مقدار کد
     return render_template("index.html", code="")
 
 # 🔧 اجرای برنامه در محیط توسعه یا استقرار
